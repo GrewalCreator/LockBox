@@ -1,4 +1,4 @@
-package com.manager.password;
+package com.manager.password.manager;
 
 import java.security.*;
 
