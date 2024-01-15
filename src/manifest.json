@@ -1,0 +1,10 @@
+{
+  "manifest_version": 3,
+  "name": "Password Manager",
+  "description": "Chrome Extension To Manage Passwords Locally",
+  "version": "1.0",
+  "action": {
+    "default_popup": "./user-interface/index.html",
+    "default_icon": "./user-interface/images/passwordManagerIcon.png"
+  }
+}
