@@ -1,0 +1,8 @@
+sql:
+
+    setupColumns: > CREATE TABLE IF NOT EXISTS Accounts (
+                      id INTEGER PRIMARY KEY AUTOINCREMENT,
+                      site TEXT NOT NULL,
+                      username TEXT NOT NULL,
+                      password BLOB NOT NULL,
+                      created_at TEXT DEFAULT CURRENT_TIMESTAMP);

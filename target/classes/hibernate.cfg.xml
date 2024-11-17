@@ -1,0 +1,38 @@
+<!DOCTYPE hibernate-configuration PUBLIC
+    "-//Hibernate/Hibernate Configuration DTD 3.0//EN"
+    "http://www.hibernate.org/dtd/hibernate-configuration">
+
+<hibernate-configuration>
+    <session-factory>
+        <!-- JDBC Database connection settings -->
+        <property name="hibernate.connection.driver_class">com.mysql.cj.jdbc.Driver</property>
+        <property name="hibernate.connection.url">jdbc:mysql://localhost:3306/shdwbx</property>
+        <property name="hibernate.connection.username">root</property> <!-- Replace with your MySQL username -->
+        <property name="hibernate.connection.password">root_admin</property> <!-- Replace with your MySQL password -->
+
+        <!-- JDBC connection pool settings (optional, if you use a connection pool like c3p0) -->
+        <property name="hibernate.c3p0.min_size">5</property>
+        <property name="hibernate.c3p0.max_size">20</property>
+        <property name="hibernate.c3p0.timeout">300</property>
+        <property name="hibernate.c3p0.max_statements">50</property>
+        <property name="hibernate.c3p0.idle_test_period">3000</property>
+
+        <!-- MySQL dialect -->
+        <!-- <property name="hibernate.dialect">org.hibernate.dialect.MySQLDialect</property> --> <!-- or use MySQL5Dialect for better support of newer versions -->
+
+        <!-- Enable Hibernate's automatic session context management -->
+        <property name="hibernate.current_session_context_class">thread</property>
+
+        <!-- Echo all executed SQL to stdout -->
+        <property name="hibernate.show_sql">true</property>
+        <property name="hibernate.format_sql">true</property>
+        <property name="hibernate.highlight_sql">true</property>
+
+        <!-- Drop and re-create the database schema on startup -->
+        <property name="hibernate.hbm2ddl.auto">update</property> <!-- change to "validate" or "create-drop" if needed -->
+
+        <!-- Specify our mappings -->
+        <mapping class="com.lock.Accounts" />
+
+    </session-factory>
+</hibernate-configuration>
