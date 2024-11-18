@@ -1,58 +1,97 @@
 package com.lock;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Paths;
 import java.sql.Connection;
-import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.Properties;
+
+import org.hibernate.SessionFactory;
+import org.hibernate.boot.Metadata;
+import org.hibernate.boot.MetadataSources;
+import org.hibernate.boot.registry.StandardServiceRegistry;
+import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
+
+//TODO: Add password and username property dynamiclly to stay secure, take out of cfg.xml
 
 public class DatabaseUtil {
 
-    private final String appName;
+    private SessionFactory sessionFactory;
 
-    public DatabaseUtil(String appName){
-        this.appName = appName;
-    }
-    
-    private String getDatabasePath(){
-        String os = System.getProperty("os.name").toLowerCase();
-        String userHome = System.getProperty("user.home").toLowerCase();
-        
-        String databaseDir;
-
-        // Find appropriate location for os
-        if (os.contains("win")){
-            databaseDir = userHome + "\\AppData\\Local\\" + this.appName;
-        } else if (os.contains("mac")) {
-            databaseDir = userHome + "/Library/Application Support/" + this.appName;
-        } else {
-            databaseDir = userHome + "/." + this.appName;
-        }
-
-        // Create directory if does not exist
-        File dir = new File(databaseDir);
-        if (!dir.exists()) {
-            dir.mkdirs();
-        }
-
-        return databaseDir + File.separator + "shdwbx.db";
+    public DatabaseUtil() {
+        this.sessionFactory = buildSessionFactory();
     }
 
-    public Connection initDatabase(){
-        String dbPath = getDatabasePath();
-        Connection conn = null;
+    private String setupDatabase() {
+
+        String url = "jdbc:mysql://localhost:3306/shdwbx";
+        String username = "root";
+        String password = "root_admin";
 
         try {
-            Class.forName("org.sqlite.JDBC");
-            conn = DriverManager.getConnection("jdbc:sqlite:" + dbPath);
-            if (conn != null) {
-                DatabaseMetaData meta = conn.getMetaData();
-                System.out.println("The driver name is " + meta.getDriverName());
-                System.out.println("A new database has been created or opened.");
-            }
-        } catch (SQLException | ClassNotFoundException e) {
+            // Establishing connection to the database
+            Connection connection = DriverManager.getConnection(url, username, password);
+
+            // Creating a statement to execute queries
+            Statement statement = connection.createStatement();
+
+            // Example SQL query (you can add more queries here as needed)
+            String createTableQuery = "CREATE TABLE IF NOT EXISTS users (" +
+                                      "id INT AUTO_INCREMENT PRIMARY KEY, " +
+                                      "name VARCHAR(100) NOT NULL, " +
+                                      "email VARCHAR(100) NOT NULL" +
+                                      ")";
+
+            // Execute the SQL query
+            statement.executeUpdate(createTableQuery);
+            System.out.println("Database connection successful, table created if it didn't exist.");
+
+            // Clean up and close connections
+            statement.close();
+            connection.close();
+        } catch (SQLException e) {
             e.printStackTrace();
         }
-        return conn;
+
+
+
+        return url;
+    }
+
+    private Properties getHibernateProperties() {
+        Properties properties = new Properties();
+        properties.setProperty("hibernate.connection.url", setupDatabase());
+
+        return properties;
+    }
+
+    private SessionFactory buildSessionFactory() {
+        try {
+            // Create the StandardServiceRegistry and apply settings
+            StandardServiceRegistry standardRegistry = new StandardServiceRegistryBuilder()
+                //.applySettings(getHibernateProperties())
+                .configure()
+                .build();
+
+            // Build the Metadata and SessionFactory
+            Metadata metadata = new MetadataSources(standardRegistry).getMetadataBuilder().build();
+            return metadata.getSessionFactoryBuilder().build();
+        } catch (Throwable e) {
+            throw new ExceptionInInitializerError("Failed to build SessionFactory: " + e.getMessage());
+        }
+    }
+
+    @SuppressWarnings("exports")
+    public SessionFactory getSessionFactory() {
+        return this.sessionFactory;
+    }
+
+    public void closeSessionFactory() {
+        if (sessionFactory != null && !sessionFactory.isClosed()) {
+            sessionFactory.close();
+        }
     }
 }

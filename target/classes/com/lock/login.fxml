@@ -19,7 +19,7 @@
       </PasswordField>
       <Button fx:id="loginButton" onAction="#login" text="Login" />
       <Label text="Don't Have An Account? " />
-      <Hyperlink onAction="#switchToRegistration" text="https://www.google.ca" />
+      <Hyperlink id="sign_up_link" text="Sign Up" onAction="#switchToRegistration"/>
    </children>
    <padding>
       <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />

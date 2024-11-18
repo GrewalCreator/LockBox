@@ -14,4 +14,6 @@ public class LoginController {
     private void switchToRegistration() throws IOException {
         App.setRoot("register");
     }
+
+    
 }
