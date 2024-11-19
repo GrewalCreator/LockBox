@@ -11,12 +11,15 @@ import java.io.IOException;
 
 import org.hibernate.SessionFactory;
 
+import com.lock.util.DatabaseUtil;
+
 /**
  * JavaFX App
  */
 public class App extends Application {
 
     private static Scene scene;
+    private final String appName = "LockBox";
     private DatabaseUtil databaseUtil = new DatabaseUtil();
     private SessionFactory sessionFactory;
 
@@ -25,7 +28,7 @@ public class App extends Application {
         launch();
     }
 
-
+//TODO: Install and setup mysql script
 
     @Override
     public void start(Stage stage) throws IOException
@@ -53,7 +56,7 @@ public class App extends Application {
     }
 
 
-    static void setRoot(String fxml) throws IOException
+    protected static void setRoot(String fxml) throws IOException
     {
         scene.setRoot(loadFXML(fxml));
     }

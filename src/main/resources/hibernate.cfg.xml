@@ -5,20 +5,16 @@
 <hibernate-configuration>
     <session-factory>
         <!-- JDBC Database connection settings -->
-        <property name="hibernate.connection.driver_class">com.mysql.cj.jdbc.Driver</property>
-        <property name="hibernate.connection.url">jdbc:mysql://localhost:3306/shdwbx</property>
-        <property name="hibernate.connection.username">root</property> <!-- Replace with your MySQL username -->
-        <property name="hibernate.connection.password">root_admin</property> <!-- Replace with your MySQL password -->
+        <property name="hibernate.connection.driver_class">org.h2.Driver</property>
+        <property name="hibernate.connection.username">sa</property> <!-- Default username for H2 -->
+        <property name="hibernate.connection.password"></property> <!-- Default H2 password (empty) -->
 
-        <!-- JDBC connection pool settings (optional, if you use a connection pool like c3p0) -->
+        <!-- JDBC connection pool settings -->
         <property name="hibernate.c3p0.min_size">5</property>
         <property name="hibernate.c3p0.max_size">20</property>
         <property name="hibernate.c3p0.timeout">300</property>
         <property name="hibernate.c3p0.max_statements">50</property>
         <property name="hibernate.c3p0.idle_test_period">3000</property>
-
-        <!-- MySQL dialect -->
-        <!-- <property name="hibernate.dialect">org.hibernate.dialect.MySQLDialect</property> --> <!-- or use MySQL5Dialect for better support of newer versions -->
 
         <!-- Enable Hibernate's automatic session context management -->
         <property name="hibernate.current_session_context_class">thread</property>
@@ -28,11 +24,11 @@
         <property name="hibernate.format_sql">true</property>
         <property name="hibernate.highlight_sql">true</property>
 
-        <!-- Drop and re-create the database schema on startup -->
-        <property name="hibernate.hbm2ddl.auto">update</property> <!-- change to "validate" or "create-drop" if needed -->
+        <!-- Hibernate schema management -->
+        <property name="hibernate.hbm2ddl.auto">update</property> <!-- Automatically updates the schema -->
 
         <!-- Specify our mappings -->
-        <mapping class="com.lock.Accounts" />
 
+        <mapping class="com.lock.Accounts" />
     </session-factory>
 </hibernate-configuration>
