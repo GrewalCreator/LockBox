@@ -1,6 +1,7 @@
 package com.lock;
 
 import java.io.IOException;
+
 import javafx.fxml.FXML;
 
 public class LoginController {
@@ -15,5 +16,5 @@ public class LoginController {
         App.setRoot("register");
     }
 
-    
+
 }

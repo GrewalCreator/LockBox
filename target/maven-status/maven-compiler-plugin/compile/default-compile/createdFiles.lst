@@ -1,8 +1,0 @@
-com/lock/DatabaseUtil.class
-com/lock/SecondaryController.class
-com/lock/App.class
-com/lock/PrimaryController.class
-module-info.class
-com/lock/Accounts.class
-com/lock/LoginController.class
-com/lock/RegistrationController.class
