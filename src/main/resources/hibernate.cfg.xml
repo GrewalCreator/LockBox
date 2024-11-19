@@ -29,6 +29,6 @@
 
         <!-- Specify our mappings -->
 
-        <mapping class="com.lock.Accounts" />
+        <mapping class="com.lock.model.Accounts"/>
     </session-factory>
 </hibernate-configuration>

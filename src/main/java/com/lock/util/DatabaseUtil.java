@@ -41,8 +41,10 @@ public class DatabaseUtil {
 
             // Build the Metadata and SessionFactory
             Metadata metadata = new MetadataSources(standardRegistry).getMetadataBuilder().build();
+
             return metadata.getSessionFactoryBuilder().build();
         } catch (Throwable e) {
+            e.printStackTrace();
             throw new ExceptionInInitializerError("Failed to build SessionFactory: " + e.getMessage());
         }
     }

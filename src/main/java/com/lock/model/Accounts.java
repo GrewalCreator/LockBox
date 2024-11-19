@@ -1,4 +1,4 @@
-package com.lock;
+package com.lock.model;
 
 import java.time.LocalDate;
 import jakarta.persistence.Column;
