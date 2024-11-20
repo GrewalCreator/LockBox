@@ -6,6 +6,7 @@ module lockbox {
     requires jakarta.persistence;
     requires org.hibernate.orm.core;
 
-    opens com.lock to javafx.fxml, org.hibernate.orm.core;  // Opening package for reflection-based access
+    opens com.lock to javafx.fxml, org.hibernate.orm.core;  // Opening com.lock for reflection-based access
+    opens com.lock.model to org.hibernate.orm.core;  // Opening com.lock.model for Hibernate entity scanning
     exports com.lock;
 }
