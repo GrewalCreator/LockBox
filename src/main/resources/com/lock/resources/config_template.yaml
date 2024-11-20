@@ -1,2 +1,6 @@
-appName: "LockBox"
+appName: LockBox
 os:
+database:
+  schema: lockbox_account_data
+  username:
+  password:

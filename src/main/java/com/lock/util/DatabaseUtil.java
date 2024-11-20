@@ -27,6 +27,8 @@ public class DatabaseUtil {
 
     private Properties getHibernateProperties() {
         Properties properties = new Properties();
+        String schemaName = (String) configUtil.getConfigAttribute("database.schema");
+        properties.setProperty("hibernate.default_schema", schemaName);
         properties.setProperty("hibernate.connection.url", "jdbc:h2:file:" + getDBPath() + ";DB_CLOSE_ON_EXIT=TRUE;AUTO_SERVER=TRUE");
 
         return properties;

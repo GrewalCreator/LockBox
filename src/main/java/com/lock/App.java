@@ -19,8 +19,9 @@ import com.lock.util.DatabaseUtil;
 public class App extends Application {
 
     private static Scene scene;
-    private DatabaseUtil databaseUtil = new DatabaseUtil();
+    private static DatabaseUtil databaseUtil = new DatabaseUtil();
     private SessionFactory sessionFactory;
+
 
     public static void main(String[] args)
     {
