@@ -19,7 +19,6 @@ import com.lock.util.DatabaseUtil;
 public class App extends Application {
 
     private static Scene scene;
-    private final String appName = "LockBox";
     private DatabaseUtil databaseUtil = new DatabaseUtil();
     private SessionFactory sessionFactory;
 

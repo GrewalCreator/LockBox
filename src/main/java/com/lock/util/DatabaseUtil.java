@@ -14,9 +14,10 @@ import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 public class DatabaseUtil {
 
     private SessionFactory sessionFactory;
-    private final String APP_NAME = ConfigUtil.getAppName();
+    private ConfigUtil configUtil;
 
     public DatabaseUtil() {
+        this.configUtil = new ConfigUtil();
         this.sessionFactory = buildSessionFactory();
     }
 
@@ -50,24 +51,7 @@ public class DatabaseUtil {
     }
 
     private String getDBPath(){
-        String os = System.getProperty("os.name").toLowerCase();
-        String userHome = System.getProperty("user.home").toLowerCase();
-
-        String databaseDir;
-        // Find appropriate location for os
-        if (os.contains("win")){
-            databaseDir = userHome + "\\AppData\\Local\\" + this.APP_NAME;
-        } else if (os.contains("mac")) {
-            databaseDir = userHome + "/Library/Application Support/" + this.APP_NAME;
-        } else {
-            databaseDir = userHome + "/." + this.APP_NAME;
-        }
-        // Create directory if does not exist
-        File dir = new File(databaseDir);
-        if (!dir.exists()) {
-            dir.mkdirs();
-        }
-        return databaseDir + File.separator + "shdwbx.db";
+        return configUtil.getBaseDir() + File.separator + "shdwbx.db";
     }
 
 
