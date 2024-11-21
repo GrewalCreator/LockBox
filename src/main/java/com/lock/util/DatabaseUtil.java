@@ -9,58 +9,76 @@ import org.hibernate.boot.MetadataSources;
 import org.hibernate.boot.registry.StandardServiceRegistry;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 
-//TODO: Add password and username property dynamiclly to stay secure, take out of cfg.xml
+public final class DatabaseUtil {
 
-public class DatabaseUtil {
+    private static final SessionFactory sessionFactory;
+    private static final StandardServiceRegistry registry;
 
-    private SessionFactory sessionFactory;
-    private ConfigUtil configUtil;
 
-    public DatabaseUtil() {
-        this.configUtil = new ConfigUtil();
-        this.sessionFactory = buildSessionFactory();
+    static {
+        registry = buildServiceRegistry();
+        sessionFactory = buildSessionFactory();
     }
 
-    public SessionFactory getSessionFactory() {
-        return this.sessionFactory;
+    // Private constructor to prevent instantiation
+    private DatabaseUtil() {
+        throw new UnsupportedOperationException("Utility class");
     }
 
-    private Properties getHibernateProperties() {
-        Properties properties = new Properties();
-        String schemaName = (String) configUtil.getConfigAttribute("database.schema");
-        properties.setProperty("hibernate.default_schema", schemaName);
-        properties.setProperty("hibernate.connection.url", "jdbc:h2:file:" + getDBPath() + ";DB_CLOSE_ON_EXIT=TRUE;AUTO_SERVER=TRUE");
-
-        return properties;
-    }
-
-    private SessionFactory buildSessionFactory() {
+    /**
+     * Builds the Hibernate ServiceRegistry using dynamic properties.
+     * @return StandardServiceRegistry instance.
+     */
+    private static StandardServiceRegistry buildServiceRegistry() {
         try {
-            // Create the StandardServiceRegistry and apply settings
-            StandardServiceRegistry standardRegistry = new StandardServiceRegistryBuilder()
-                .applySettings(getHibernateProperties())
+            Properties properties = new Properties();
+            properties.setProperty("hibernate.connection.url", "jdbc:h2:file:" + getDBPath() + ";DB_CLOSE_ON_EXIT=TRUE;AUTO_SERVER=TRUE");
+            properties.setProperty("hibernate.default_schema", (String) ConfigUtil.getConfigAttribute("database.schema"));
+
+            return new StandardServiceRegistryBuilder()
+                .applySettings(properties)
                 .configure()
                 .build();
 
-            // Build the Metadata and SessionFactory
-            Metadata metadata = new MetadataSources(standardRegistry).getMetadataBuilder().build();
-
-            return metadata.getSessionFactoryBuilder().build();
         } catch (Throwable e) {
-            e.printStackTrace();
-            throw new ExceptionInInitializerError("Failed to build SessionFactory: " + e.getMessage());
+            throw new ExceptionInInitializerError("Failed to initialize Hibernate ServiceRegistry: " + e.getMessage());
         }
     }
 
-    private String getDBPath(){
-        return configUtil.getBaseDir() + File.separator + "shdwbx.db";
+    /**
+     * Builds the Hibernate SessionFactory using the ServiceRegistry.
+     * @return SessionFactory instance.
+     */
+    private static SessionFactory buildSessionFactory() {
+        Metadata metadata = new MetadataSources(registry).getMetadataBuilder().build();
+        return metadata.getSessionFactoryBuilder().build();
     }
 
+    /**
+     * Retrieves the global SessionFactory instance.
+     * @return the SessionFactory.
+     */
+    public static SessionFactory getSessionFactory() {
+        return sessionFactory;
+    }
 
-
-    public void closeSessionFactory() {
+    /**
+     * Closes the SessionFactory and associated resources.
+     */
+    public static void closeSessionFactory() {
         if (sessionFactory != null && !sessionFactory.isClosed()) {
             sessionFactory.close();
         }
+        if (registry != null) {
+            StandardServiceRegistryBuilder.destroy(registry);
+        }
+    }
+
+    /**
+     * Returns the database file path.
+     * @return the database file path as a String.
+     */
+    private static String getDBPath() {
+        return ConfigUtil.getBaseDir() + File.separator + "shdwbx.db";
     }
 }
