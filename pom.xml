@@ -1,17 +1,14 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-
     <groupId>com.lock</groupId>
     <artifactId>lockbox</artifactId>
     <version>1.0-SNAPSHOT</version>
-
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
     </properties>
-
     <dependencies>
         <dependency>
             <groupId>org.openjfx</groupId>
@@ -52,20 +49,18 @@
             <version>2.3</version>
         </dependency>
     </dependencies>
-
     <build>
         <resources>
             <resource>
                 <directory>src/main/resources</directory>
             </resource>
         </resources>
-
         <plugins>
-            <!-- Maven Compiler Plugin -->
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.8.0</version>
+                <version>3.13.0</version>
                 <configuration>
                     <release>21</release>
                     <compilerArgs>
@@ -75,7 +70,6 @@
                 </configuration>
             </plugin>
 
-            <!-- JavaFX Maven Plugin -->
             <plugin>
                 <groupId>org.openjfx</groupId>
                 <artifactId>javafx-maven-plugin</artifactId>
@@ -97,51 +91,19 @@
                 </executions>
             </plugin>
 
-            <!-- Maven Jar Plugin to include Main-Class in the manifest -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
-                <version>3.1.0</version>
+                <version>3.3.0</version>
                 <configuration>
                     <archive>
-                        <manifestEntries>
-                            <Main-Class>com.lock.App</Main-Class> <!-- Update with your main class -->
-                        </manifestEntries>
+                        <manifest>
+                            <mainClass>com.lock.App</mainClass>
+                        </manifest>
                     </archive>
                 </configuration>
             </plugin>
 
-            <!-- Maven JLink Plugin to create a custom runtime image -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jlink-plugin</artifactId>
-                <version>3.2.0</version>
-                <executions>
-                    <execution>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>jlink</goal>
-                        </goals>
-                        <configuration>
-                            <imageOutputDirectory>${project.build.directory}/jlink-image</imageOutputDirectory>
-                            <modulePath>
-                                <module>${project.build.directory}/classes</module>
-                                <module>${maven.home}/lib/boot</module>
-                            </modulePath>
-                            <addModules>java.base,javafx.controls,javafx.fxml</addModules>
-                            <modules>
-                                <module>javafx.controls</module>
-                                <module>javafx.fxml</module>
-                                <module>com.lock</module>
-                                <module>org.hibernate.orm</module>
-                                <module>jakarta.persistence</module>
-                                <module>h2</module>
-                                <module>snakeyaml</module>
-                            </modules>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
         </plugins>
     </build>
 </project>
