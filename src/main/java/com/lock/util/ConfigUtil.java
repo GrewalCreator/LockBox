@@ -57,8 +57,58 @@ public final class ConfigUtil {
             System.out.println("Created directory: " + resourcesDir.getAbsolutePath());
         }
 
+
         configPath = new File(resourcesDir, "config.yaml").getAbsolutePath();
         initConfigFile(appName);
+    }
+
+    @SuppressWarnings("unchecked")
+    public static void setConfigAttribute(String key, Object value, boolean force) {
+        try {
+            Map<String, Object> configMap = new HashMap<>();
+            File configFile = new File(configPath);
+
+            if (configFile.exists()) {
+                try (InputStream inputStream = new FileInputStream(configFile)) {
+                    Map<String, Object> loadedConfig = yaml.load(inputStream);
+                    if (loadedConfig != null) {
+                        configMap.putAll(loadedConfig);
+                    }
+                }
+            }
+
+            String[] keys = key.split("\\.");
+            Map<String, Object> currentMap = configMap;
+            for (int i = 0; i < keys.length - 1; i++) {
+                String part = keys[i];
+                if (!currentMap.containsKey(part) || !(currentMap.get(part) instanceof Map)) {
+                    if (force) {
+                        currentMap.put(part, new HashMap<>());
+                    } else {
+                        throw new IllegalArgumentException("Key path '" + key + "' does not exist. Set force=true to create it.");
+                    }
+                }
+                currentMap = (Map<String, Object>) currentMap.get(part);
+            }
+
+            String finalKey = keys[keys.length - 1];
+            if (!currentMap.containsKey(finalKey) && !force) {
+                throw new IllegalArgumentException("Key '" + finalKey + "' does not exist. Set force=true to create it.");
+            }
+            currentMap.put(finalKey, value);
+
+            // Write back to file
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter(configFile))) {
+                yaml.dump(configMap, writer);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("Error updating the config file at: " + configPath, e);
+        }
+    }
+
+
+    public static void setConfigAttribute(String key, Object value){
+        setConfigAttribute(key, value, false);
     }
 
     public static String getAppName() {
@@ -158,8 +208,7 @@ public final class ConfigUtil {
 
         // Load the template configuration from classpath
         Map<String, Object> templateConfig = loadConfigFromClassPath(CONFIG_FILE_TEMPLATE);
-        templateConfig.put("os", OS);
-        templateConfig.put("username", appName + "_" + System.getenv("USER"));
+        templateConfig.put("device.os", OS);
 
         // Load existing configuration from the filesystem if it exists
         Map<String, Object> existingConfig = new HashMap<>();
