@@ -9,3 +9,6 @@ database:
     poolSize: 10
     # Seconds
     timeout: 30
+    connectionTimeout: 30
+    # minutes
+    lifetime: 30

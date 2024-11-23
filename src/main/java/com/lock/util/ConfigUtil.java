@@ -133,6 +133,7 @@ public final class ConfigUtil {
     public static Object getConfigAttribute(String key) throws IllegalArgumentException {
         try (InputStream inputStream = new FileInputStream(configPath)) {
             Map<String, Object> configMap = yaml.load(inputStream);
+            System.out.println("Raw YAML data: " + configMap);
 
             if (configMap == null) {
                 throw new IllegalArgumentException("Config file is empty or could not be loaded.");
@@ -142,7 +143,10 @@ public final class ConfigUtil {
             Object value = configMap;
 
             // Traverse the nested maps using the keys
-            for (String k : keys) {
+            for (int i = 0; i < keys.length; i++) {
+                String k = keys[i];
+
+                // If value is map, continue traversing it
                 if (value instanceof Map) {
                     Map<?, ?> mapValue = (Map<?, ?>) value;
                     if (mapValue.containsKey(k)) {
@@ -151,15 +155,20 @@ public final class ConfigUtil {
                         throw new IllegalArgumentException("Key '" + k + "' not found in the config path: " + key);
                     }
                 } else {
-                    throw new IllegalArgumentException("The key path '" + key + "' does not correspond to a valid map in the config file.");
+                    if (i == keys.length - 1) {
+                        return value; // Return the final non-map value
+                    } else {
+                        throw new IllegalArgumentException("The key path '" + key + "' does not correspond to a valid map in the config file.");
+                    }
                 }
             }
 
-            return value;
+            return value; // This will be reached after all keys have been traversed
         } catch (IOException e) {
             throw new RuntimeException("Error reading config file at: " + configPath, e);
         }
     }
+
 
     /**
      * Loads the configuration from a YAML file using SnakeYAML.
@@ -208,7 +217,6 @@ public final class ConfigUtil {
 
         // Load the template configuration from classpath
         Map<String, Object> templateConfig = loadConfigFromClassPath(CONFIG_FILE_TEMPLATE);
-        templateConfig.put("device.os", OS);
 
         // Load existing configuration from the filesystem if it exists
         Map<String, Object> existingConfig = new HashMap<>();
@@ -216,23 +224,40 @@ public final class ConfigUtil {
             existingConfig = loadConfigFromFileSystem(configPath);
         }
 
-        // Merge configurations while maintaining data types
-        for (Map.Entry<String, Object> entry : templateConfig.entrySet()) {
-            String key = entry.getKey();
-            Object value = entry.getValue();
+        // Merge configurations while maintaining data types and still checking nested values
+        existingConfig = deepMerge(templateConfig, existingConfig);
 
-            // If the key already exists in the existing config, keep the existing value
-            if (!existingConfig.containsKey(key)) {
-                existingConfig.put(key, value);
-            }
-        }
-
-        // Write the merged configuration back to the file
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(configFile))) {
             yaml.dump(existingConfig, writer);
             System.out.println("Config file created/updated at: " + configFile.getAbsolutePath());
         } catch (IOException e) {
             throw new RuntimeException("Failed to write config file: " + configPath, e);
         }
+
+        // Set device attributes
+        setConfigAttribute("device.os", OS);
+    }
+
+    // Deep merge logic to handle nested maps
+    @SuppressWarnings("unchecked")
+    private static Map<String, Object> deepMerge(Map<String, Object> templateConfig, Map<String, Object> existingConfig) {
+        for (Map.Entry<String, Object> entry : templateConfig.entrySet()) {
+            String key = entry.getKey();
+            Object templateValue = entry.getValue();
+
+            // If the key doesn't exist in existingConfig, add it
+            if (!existingConfig.containsKey(key)) {
+                existingConfig.put(key, templateValue);
+            } else {
+                // If both values are maps, merge them recursively
+                Object existingValue = existingConfig.get(key);
+                if (templateValue instanceof Map && existingValue instanceof Map) {
+                    existingConfig.put(key, deepMerge((Map<String, Object>) templateValue, (Map<String, Object>) existingValue));
+                } else {
+                    existingConfig.put(key, templateValue);
+                }
+            }
+        }
+        return existingConfig;
     }
 }
