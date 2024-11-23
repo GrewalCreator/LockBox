@@ -1,6 +1,14 @@
 appName: LockBox
-os:
+device:
+  os:
 database:
   schema: lockbox_account_data
   username:
   password:
+  connection:
+    poolSize: 10
+    # Seconds
+    timeout: 30
+    connectionTimeout: 30
+    # minutes
+    lifetime: 30

@@ -8,15 +8,12 @@ import javafx.stage.Stage;
 
 import java.io.IOException;
 
-import org.hibernate.SessionFactory;
-
 import com.lock.util.DatabaseUtil;
 
 
 public class App extends Application {
 
     private static Scene scene;
-    private SessionFactory sessionFactory;
 
     public static void main(String[] args) {
         launch();
@@ -25,7 +22,7 @@ public class App extends Application {
     @Override
     public void start(Stage stage) throws IOException {
         try {
-            this.sessionFactory = DatabaseUtil.getSessionFactory();
+            DatabaseUtil.getSessionFactory();
         } catch (Exception e) {
             System.err.println("Error while initializing the SessionFactory: " + e.getMessage());
             e.printStackTrace();
