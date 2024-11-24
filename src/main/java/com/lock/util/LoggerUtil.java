@@ -1,5 +1,5 @@
 package com.lock.util;
 
-public class LoggerUtil {
+public final class LoggerUtil {
     
 }

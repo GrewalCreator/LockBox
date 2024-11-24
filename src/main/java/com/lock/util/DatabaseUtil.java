@@ -2,7 +2,9 @@ package com.lock.util;
 
 import java.io.File;
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Arrays;
 import java.util.Properties;
 
 import org.hibernate.SessionFactory;
@@ -39,7 +41,6 @@ public final class DatabaseUtil {
         private static StandardServiceRegistry buildServiceRegistry() {
             try {
                 String username = (String) ConfigUtil.getConfigAttribute("database.username");
-                String password = (String) ConfigUtil.getConfigAttribute("database.password");
 
                 Properties properties = new Properties();
                 properties.setProperty("hibernate.connection.url", getJDBCPath() + ";DB_CLOSE_ON_EXIT=TRUE;AUTO_SERVER=TRUE");
@@ -47,8 +48,11 @@ public final class DatabaseUtil {
                 properties.put("hibernate.hikari.dataSource", getDataSource());
 
                 properties.setProperty("hibernate.connection.username", username);
-                properties.setProperty("hibernate.connection.password", password);
 
+                SecureUtil.usePassword(password -> {
+                    properties.setProperty("hibernate.connection.password", new String(password));
+                    Arrays.fill(password, '\0');
+                });
 
                 return new StandardServiceRegistryBuilder()
                     .applySettings(properties)
@@ -70,24 +74,41 @@ public final class DatabaseUtil {
         }
 
         private static String initDatabase(){
-            String dbPath = ConfigUtil.getBaseDir() + File.separator + DATABASE_NAME + ".db";
+            String dbPath = OSUtil.getBaseDir() + File.separator + DATABASE_NAME + ".db";
             databasePath = dbPath;
 
         // Setup Schema & User
         String username = ConfigUtil.getAppName() + "_" + System.getenv("USER");
-        String password = SecureUtil.generateRandomPassword(15);
+        //String password = SecureUtil.generateRandomPassword(15);
         String schemaName = (String) ConfigUtil.getConfigAttribute("database.schema");
 
         ConfigUtil.setConfigAttribute("database.username", username);
-        ConfigUtil.setConfigAttribute("database.password", password);
+
 
 
         initConnectionPool("sa", "");
 
         try (Connection conn = getDataSource().getConnection()) {
             Statement query = conn.createStatement();
+
             query.executeUpdate(String.format("CREATE SCHEMA IF NOT EXISTS %s;", schemaName));
-            query.executeUpdate(String.format("CREATE USER IF NOT EXISTS %s PASSWORD '%s';", username, password));
+
+            SecureUtil.usePassword(password -> {
+                char[] passStr = SecureUtil.generateRandomPassword(15);
+
+                try {
+                    String passwordString = new String(passStr);
+
+                    query.executeUpdate(String.format("CREATE USER IF NOT EXISTS %s PASSWORD '%s';", username, passwordString));
+
+                    SecureUtil.setAppPassword(passStr);
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                } finally {
+                    Arrays.fill(passStr, '\0');
+                }
+            });
+            query.executeUpdate(String.format("REVOKE ALL ON SCHEMA %s FROM root;", schemaName));
             query.executeUpdate(String.format("GRANT ALL PRIVILEGES ON SCHEMA %s TO %s;", schemaName, username));
         } catch (Exception e) {
             e.printStackTrace();

@@ -6,6 +6,7 @@ import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -15,8 +16,6 @@ import org.yaml.snakeyaml.Yaml;
 public final class ConfigUtil {
 
     private static final String CONFIG_FILE_TEMPLATE = "/com/lock/resources/config_template.yaml";
-    private static final String OS = System.getProperty("os.name").toLowerCase();
-    private static String baseDir;
     private static String configPath;
     private static final Yaml yaml;
 
@@ -39,20 +38,11 @@ public final class ConfigUtil {
      * Sets up the configuration directory and config file.
      */
     private static void setupConfig() {
-        String userHome = System.getProperty("user.home");
         String appName = (String) loadConfigFromClassPath(CONFIG_FILE_TEMPLATE).get("appName");
-
-        // Base directory for the app based on the OS
-        if (OS.contains("win")) {
-            baseDir = userHome + "\\AppData\\Local\\" + appName;
-        } else if (OS.contains("mac")) {
-            baseDir = userHome + "/Library/Application Support/" + appName;
-        } else {
-            baseDir = userHome + "/." + appName;
-        }
+        Path baseDir = OSUtil.getBaseDir();
 
         // Resources directory
-        File resourcesDir = new File(baseDir, "resources");
+        File resourcesDir = new File(baseDir.toString(), "resources");
         if (!resourcesDir.exists() && resourcesDir.mkdirs()) {
             System.out.println("Created directory: " + resourcesDir.getAbsolutePath());
         }
@@ -115,8 +105,8 @@ public final class ConfigUtil {
         return (String) getConfigAttribute("appName");
     }
 
-    public static String getBaseDir() {
-        return baseDir;
+    public static Path getBaseDir() {
+        return OSUtil.getBaseDir();
     }
 
     public static String getConfigPath() {
@@ -163,7 +153,7 @@ public final class ConfigUtil {
                 }
             }
 
-            return value; // This will be reached after all keys have been traversed
+            return value; // Reached after all keys have been traversed
         } catch (IOException e) {
             throw new RuntimeException("Error reading config file at: " + configPath, e);
         }
@@ -235,7 +225,7 @@ public final class ConfigUtil {
         }
 
         // Set device attributes
-        setConfigAttribute("device.os", OS);
+        setConfigAttribute("device.os", OSUtil.getOperatingSystem());
     }
 
     // Deep merge logic to handle nested maps
