@@ -1,6 +1,8 @@
-package com.lock;
+package com.lock.controller;
 
 import java.io.IOException;
+
+import com.lock.App;
 
 import javafx.fxml.FXML;
 

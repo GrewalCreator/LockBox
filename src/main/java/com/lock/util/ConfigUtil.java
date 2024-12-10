@@ -26,7 +26,10 @@ public final class ConfigUtil {
         dumperOptions.setIndent(4);
         yaml = new Yaml(dumperOptions);
 
-        setupConfig();
+    }
+
+    public static void init(String appName){
+        setupConfig(appName);
     }
 
     // Prevent instantiation of the utility class
@@ -37,8 +40,7 @@ public final class ConfigUtil {
     /**
      * Sets up the configuration directory and config file.
      */
-    private static void setupConfig() {
-        String appName = (String) loadConfigFromClassPath(CONFIG_FILE_TEMPLATE).get("appName");
+    private static void setupConfig(String appName) {
         Path baseDir = OSUtil.getBaseDir();
 
         // Resources directory
@@ -103,6 +105,10 @@ public final class ConfigUtil {
 
     public static String getAppName() {
         return (String) getConfigAttribute("appName");
+    }
+
+    public static String loadAppNameFromTemplate() {
+        return (String) loadConfigFromClassPath(CONFIG_FILE_TEMPLATE).get("appName");
     }
 
     public static Path getBaseDir() {

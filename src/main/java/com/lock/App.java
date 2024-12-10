@@ -21,13 +21,7 @@ public class App extends Application {
 
     @Override
     public void start(Stage stage) throws IOException {
-        try {
-            DatabaseUtil.getSessionFactory();
-        } catch (Exception e) {
-            System.err.println("Error while initializing the SessionFactory: " + e.getMessage());
-            e.printStackTrace();
-        }
-
+        new AppInitalizer().initalize();
         scene = new Scene(loadFXML("login"), 640, 480);
         stage.setScene(scene);
         stage.show();
@@ -39,7 +33,7 @@ public class App extends Application {
         DatabaseUtil.closeSessionFactory();
     }
 
-    protected static void setRoot(String fxml) throws IOException {
+    public static void setRoot(String fxml) throws IOException {
         scene.setRoot(loadFXML(fxml));
     }
 

@@ -10,5 +10,6 @@ module com.lock {
 
     opens com.lock to javafx.fxml, org.hibernate.orm.core;  // Opening com.lock for reflection-based access
     opens com.lock.model to org.hibernate.orm.core;  // Opening com.lock.model for Hibernate entity scanning
+    opens com.lock.controller to javafx.fxml;
     exports com.lock;
 }

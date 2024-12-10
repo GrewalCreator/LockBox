@@ -12,9 +12,9 @@ public final class OSUtil {
         throw new UnsupportedOperationException("Utility class");
     }
 
-    static {
-        setBaseDir();
+    public static void init(String appName){
         os = getOperatingSystem();
+        setBaseDir(appName);
     }
 
     public static String getOperatingSystem() throws UnsupportedOperationException {
@@ -35,18 +35,20 @@ public final class OSUtil {
     }
 
 
-    private static void setBaseDir(){
-        String appName = ConfigUtil.getAppName();
+    protected static void setBaseDir(String appName){
         String userHome = System.getProperty("user.home");
 
 
         switch (os) {
             case "windows":
                 baseDir = Paths.get(System.getenv("LOCALAPPDATA"), appName);
+                break;
             case "mac":
                 baseDir = Paths.get(userHome, "Library", "Application Support", appName);
+                break;
             case "linux":
                 baseDir = Paths.get(userHome, "." + appName.toLowerCase());
+                break;
             default:
                 throw new UnsupportedOperationException("Unsupported OS: " + os);
         }
@@ -54,6 +56,10 @@ public final class OSUtil {
 
     public static Path getSecretPath(){
         return getBaseDir().resolve(".crypt.enc");
+    }
+
+    public static Path getKeyStorePath(){
+        return getBaseDir().resolve(".keystore.jks");
     }
 
 }

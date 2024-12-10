@@ -3,8 +3,6 @@ device:
   os:
 database:
   schema: lockbox_account_data
-  username:
-  password:
   connection:
     poolSize: 10
     # Seconds
