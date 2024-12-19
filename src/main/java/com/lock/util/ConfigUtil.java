@@ -6,6 +6,7 @@ import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
@@ -13,22 +14,19 @@ import java.util.Map;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 
+import com.lock.util.LoggerUtil.LogLevel;
+
 public final class ConfigUtil {
-
+    private static final Path baseDir = OSUtil.getBaseDir();
     private static final String CONFIG_FILE_TEMPLATE = "/com/lock/resources/config_template.yaml";
-    private static String configPath;
-    private static final Yaml yaml;
+    private static final Path CONFIG_PATH = baseDir.resolve("resources/config.yaml");
+    private static Yaml yaml;
 
-    // Static initialization block for one-time setup
-    static {
+    public static void init(String appName){
         DumperOptions dumperOptions = new DumperOptions();
         dumperOptions.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
         dumperOptions.setIndent(4);
         yaml = new Yaml(dumperOptions);
-
-    }
-
-    public static void init(String appName){
         setupConfig(appName);
     }
 
@@ -41,16 +39,19 @@ public final class ConfigUtil {
      * Sets up the configuration directory and config file.
      */
     private static void setupConfig(String appName) {
-        Path baseDir = OSUtil.getBaseDir();
 
-        // Resources directory
-        File resourcesDir = new File(baseDir.toString(), "resources");
-        if (!resourcesDir.exists() && resourcesDir.mkdirs()) {
-            System.out.println("Created directory: " + resourcesDir.getAbsolutePath());
+        if (!Files.exists(baseDir)) {
+            try {
+                Files.createDirectories(CONFIG_PATH.getParent());
+                Files.createFile(CONFIG_PATH);
+            } catch (IOException e) {
+                LoggerUtil.writeLog(LogLevel.ERROR, "Failed to create Configuration File: " + e.getMessage());
+                System.exit(1);
+            }
         }
 
-
-        configPath = new File(resourcesDir, "config.yaml").getAbsolutePath();
+        // Config File
+        //configAbsPath = CONFIG_PATH.toString();
         initConfigFile(appName);
     }
 
@@ -58,7 +59,7 @@ public final class ConfigUtil {
     public static void setConfigAttribute(String key, Object value, boolean force) {
         try {
             Map<String, Object> configMap = new HashMap<>();
-            File configFile = new File(configPath);
+            File configFile = new File(getConfigAbsPath());
 
             if (configFile.exists()) {
                 try (InputStream inputStream = new FileInputStream(configFile)) {
@@ -94,7 +95,7 @@ public final class ConfigUtil {
                 yaml.dump(configMap, writer);
             }
         } catch (IOException e) {
-            throw new RuntimeException("Error updating the config file at: " + configPath, e);
+            throw new RuntimeException("Error updating the config file at: " + getConfigAbsPath(), e);
         }
     }
 
@@ -104,10 +105,6 @@ public final class ConfigUtil {
     }
 
     public static String getAppName() {
-        return (String) getConfigAttribute("appName");
-    }
-
-    public static String loadAppNameFromTemplate() {
         return (String) loadConfigFromClassPath(CONFIG_FILE_TEMPLATE).get("appName");
     }
 
@@ -115,8 +112,8 @@ public final class ConfigUtil {
         return OSUtil.getBaseDir();
     }
 
-    public static String getConfigPath() {
-        return configPath;
+    public static String getConfigAbsPath() {
+        return CONFIG_PATH.toString();
     }
 
     /**
@@ -127,7 +124,7 @@ public final class ConfigUtil {
      * @return the value associated with the key, or throw exception if the key is not found.
      */
     public static Object getConfigAttribute(String key) throws IllegalArgumentException {
-        try (InputStream inputStream = new FileInputStream(configPath)) {
+        try (InputStream inputStream = new FileInputStream(CONFIG_PATH.toString())) {
             Map<String, Object> configMap = yaml.load(inputStream);
             System.out.println("Raw YAML data: " + configMap);
 
@@ -161,7 +158,7 @@ public final class ConfigUtil {
 
             return value; // Reached after all keys have been traversed
         } catch (IOException e) {
-            throw new RuntimeException("Error reading config file at: " + configPath, e);
+            throw new RuntimeException("Error reading config file at: " + getConfigAbsPath(), e);
         }
     }
 
@@ -209,7 +206,7 @@ public final class ConfigUtil {
      * @param appName the application name to be stored in the config file.
      */
     private static void initConfigFile(String appName) {
-        File configFile = new File(configPath);
+        File configFile = new File(getConfigAbsPath());
 
         // Load the template configuration from classpath
         Map<String, Object> templateConfig = loadConfigFromClassPath(CONFIG_FILE_TEMPLATE);
@@ -217,7 +214,7 @@ public final class ConfigUtil {
         // Load existing configuration from the filesystem if it exists
         Map<String, Object> existingConfig = new HashMap<>();
         if (configFile.exists()) {
-            existingConfig = loadConfigFromFileSystem(configPath);
+            existingConfig = loadConfigFromFileSystem(getConfigAbsPath());
         }
 
         // Merge configurations while maintaining data types and still checking nested values
@@ -225,9 +222,9 @@ public final class ConfigUtil {
 
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(configFile))) {
             yaml.dump(existingConfig, writer);
-            System.out.println("Config file created/updated at: " + configFile.getAbsolutePath());
+            LoggerUtil.writeLog("Config file created/updated at: " + configFile.getAbsolutePath());
         } catch (IOException e) {
-            throw new RuntimeException("Failed to write config file: " + configPath, e);
+            throw new RuntimeException("Failed to write config file: " + getConfigAbsPath(), e);
         }
 
         // Set device attributes

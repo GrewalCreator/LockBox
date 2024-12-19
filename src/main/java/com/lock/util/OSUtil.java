@@ -1,7 +1,11 @@
 package com.lock.util;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+
+import com.lock.util.LoggerUtil.LogLevel;
 
 public final class OSUtil {
 
@@ -12,7 +16,7 @@ public final class OSUtil {
         throw new UnsupportedOperationException("Utility class");
     }
 
-    public static void init(String appName){
+    public static void init(String appName) throws UnsupportedOperationException{
         os = getOperatingSystem();
         setBaseDir(appName);
     }
@@ -35,7 +39,7 @@ public final class OSUtil {
     }
 
 
-    protected static void setBaseDir(String appName){
+    protected static void setBaseDir(String appName) throws UnsupportedOperationException{
         String userHome = System.getProperty("user.home");
 
 
@@ -50,16 +54,19 @@ public final class OSUtil {
                 baseDir = Paths.get(userHome, "." + appName.toLowerCase());
                 break;
             default:
-                throw new UnsupportedOperationException("Unsupported OS: " + os);
+                throw new UnsupportedOperationException();
         }
-    }
 
-    public static Path getSecretPath(){
-        return getBaseDir().resolve(".crypt.enc");
-    }
 
-    public static Path getKeyStorePath(){
-        return getBaseDir().resolve(".keystore.jks");
+        if (!Files.exists(baseDir)) {
+                try {
+                    Files.createDirectories(baseDir);
+                } catch (IOException e) {
+                    System.err.println("Error Creating App Directory");
+                    System.exit(1);
+                }
+        }
+
     }
 
 }

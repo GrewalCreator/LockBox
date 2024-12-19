@@ -13,7 +13,7 @@
       <Label text="Registration View" />
       <TextField fx:id="usernameField" promptText="Username" />
       <PasswordField fx:id="passwordField" promptText="Password" />
-      <PasswordField promptText="Confirm Password" />
+      <PasswordField fx:id="confirmPasswordField" promptText="Confirm Password" />
       <Button mnemonicParsing="false" fx:id="registerButton" onAction="#register" text="Register" />
       <Label text="Already Have An Account?" />
       <Hyperlink fx:id="signInLink" text="Sign In" onAction="#switchToLogin"/>

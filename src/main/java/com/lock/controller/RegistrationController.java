@@ -1,7 +1,6 @@
 package com.lock.controller;
 
 import java.io.IOException;
-import java.util.Arrays;
 
 import com.lock.App;
 import com.lock.util.DatabaseUtil;
@@ -22,9 +21,11 @@ public class RegistrationController {
     private PasswordField passwordField;
 
     @FXML
+    private PasswordField confirmPasswordField;
+
+    @FXML
     private void register() throws IOException {
         setupSessionFactory();
-        switchToLogin();
     }
 
     @FXML
@@ -35,14 +36,24 @@ public class RegistrationController {
 
     private void setupSessionFactory(){
         try {
-            boolean isSecure = SecureUtil.setAppPassword(passwordField.getText().toCharArray());
 
-            if(!isSecure){
-                alert.setContentText("Invalid Username");
+            if (!confirmPasswordField.getText().equals(passwordField.getText())){
+                alert.setContentText("Passwords Do Not Match");
                 alert.showAndWait();
-
                 return;
             }
+
+            boolean isSecure = SecureUtil.setNewAppPassword(passwordField.getText().toCharArray());
+
+            if(!isSecure){
+                alert.setContentText("Insecure Password");
+                alert.showAndWait();
+                return;
+            }
+
+            DatabaseUtil.initHibernate(usernameField.getText());
+            switchToLogin();
+
         } catch (Exception e) {
             System.err.println("Error while initializing the SessionFactory: " + e.getMessage());
             e.printStackTrace();
@@ -52,6 +63,7 @@ public class RegistrationController {
         } finally {
             passwordField.clear();
             usernameField.clear();
+            confirmPasswordField.clear();
         }
     }
 

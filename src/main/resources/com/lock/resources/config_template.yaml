@@ -1,8 +1,10 @@
+version: 0.1.0
 appName: LockBox
 device:
   os:
 database:
   schema: lockbox_account_data
+  username:
   connection:
     poolSize: 10
     # Seconds

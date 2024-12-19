@@ -2,6 +2,7 @@ package com.lock.util;
 
 import java.io.File;
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Arrays;
@@ -88,8 +89,22 @@ public final class DatabaseUtil {
                 }
             });
 
-            query.executeUpdate(String.format("REVOKE ALL ON SCHEMA %s FROM root;", schemaName));
+            String checkUserExistsQuery = String.format(
+                "SELECT COUNT(*) FROM INFORMATION_SCHEMA.USERS WHERE USER_NAME = 'root';"
+            );
+            ResultSet resultSet = query.executeQuery(checkUserExistsQuery);
+
+            if (resultSet.next() && resultSet.getInt(1) > 0) {
+                query.executeUpdate(String.format("REVOKE ALL ON SCHEMA %s FROM root;", schemaName));
+            }
+
+
             query.executeUpdate(String.format("GRANT ALL PRIVILEGES ON SCHEMA %s TO %s;", schemaName, username));
+
+            SecureUtil.usePassword(password -> {
+                initConnectionPool(username, password.toString());
+            });
+
         } catch (Exception e) {
             e.printStackTrace();
         }
